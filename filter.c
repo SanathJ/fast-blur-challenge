@@ -39,20 +39,20 @@ int main( int argc, char *argv[] )
 #endif
 
     // check for correct number of arguments
-    if ( argc != 3 && argc != 4 )
+    if ( argc != 4 && argc != 5 )
     {
-        fprintf( stderr, "Usage: %s inputfile outputfile [n]\n"
+        fprintf( stderr, "Usage: %s inputfile outputfile blurfile [n]\n"
             "\tn: Number of times to run benchmark [optional]\n",
             argv[0] != NULL ? argv[0] : "filter"
         );
         exit( EXIT_FAILURE );
     }
 
-    if ( argc == 4 )
+    if ( argc == 5 )
     {
         // note: we don't care if input starts numerically and ends with text;
         // if we find a valid value we will use it
-        n = strtol(argv[3], 0, 10);
+        n = strtol(argv[4], 0, 10);
         if ( n == LONG_MIN || n == LONG_MAX || n < 1 || n > 10000 )
         {
             fprintf( stderr, "Invalid n; expected [1 - 10000]\n" );
@@ -117,6 +117,9 @@ int main( int argc, char *argv[] )
     // note: the trailing spaces overwrite the tail end of n when at it's max length
     fprintf( stderr, "Running blur...finished.  \n" );
 
+    FILE *csv_file = fopen("./out.csv", "a");
+    fprintf(csv_file, "%s,", argv[3] + strlen("submissions/"));
+
     // print timing data while gathering statistics
     for ( uint32_t i = 0; i < n; ++i )
     {
@@ -132,6 +135,13 @@ int main( int argc, char *argv[] )
             stderr,
             "Elapsed wall time: %.7f seconds [%lds %ldns]\n",
             delta_wall_d, bench[i].delta_wall.tv_sec, bench[i].delta_wall.tv_nsec
+        );
+
+        fprintf
+        (
+            csv_file,
+            "%.9f,",
+            delta_wall_d
         );
 
 #ifdef TIME_CPU
@@ -159,6 +169,8 @@ int main( int argc, char *argv[] )
         "  Mean (± σ): %.7f (± %.7f)\n",
         fast_wall, slow_wall, wall_sum, wall_sum / n, sqrt((wall_sum_sq - wall_sum * wall_sum / n) / (n - 1))
     );
+
+    fprintf(csv_file, "\n");
 #ifdef TIME_CPU
     fprintf(
         stderr,
@@ -172,6 +184,8 @@ int main( int argc, char *argv[] )
 
     // free input image
     stbi_image_free( input );
+
+    fclose(csv_file);
 
     // open output file
     FILE *fp = fopen( argv[2], "wb" );

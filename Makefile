@@ -28,7 +28,7 @@ bench-all: | bench submissions
         tput setaf 3 && echo "Benching $f..." && tput sgr0 \
         && cp $f bench/blur.c && cd bench \
         && MAKEFLAGS=--no-print-directory $(MAKE) release \
-        && if [[ -f filter ]]; then tput setaf 6 ; ./filter ../3x3.bmp out.bmp ; tput sgr0 ; fi \
+        && if [[ -f filter ]]; then tput setaf 6 ; ./filter ../3x3.bmp out.bmp $f 10; tput sgr0 ; fi \
         ; cd .. \
         ; \
     )
